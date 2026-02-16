@@ -16,15 +16,16 @@ import {
 import { AppButton } from "../src/components/AppButton";
 import { AppText } from "../src/components/AppText";
 import { Colors } from "../src/constants/colors";
-import { useAuth } from "../src/hooks/useAuth"; // 👈 Import your hook
+
+// --- CONFIG ---
+const API_KEY = "AIzaSyDs5CfZJPabJH8AyC5x0hg-ra3Ula1Ucso";
+const BASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
-  const cardWidth = width > 768 ? 450 : width * 0.9;
 
-  // -------- USE AUTH HOOK --------
-  const { login, signup, loading: authLoading, user, isAuthenticated } = useAuth();
+  const cardWidth = width > 768 ? 450 : width * 0.9;
 
   // -------- STATE --------
   const [email, setEmail] = useState("");
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isResetMode, setIsResetMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
@@ -56,77 +58,159 @@ export default function HomeScreen() {
 
   useEffect(() => {
     setMessage({ text: "", type: "" });
-  }, [isLoginMode]);
+  }, [isLoginMode, isResetMode]);
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated && !submitting) {
-      console.log("✅ User authenticated, redirecting to dashboard");
-      router.replace("/dashboard");
+  // -------- ERROR HANDLER --------
+  const getFriendlyError = (code: string) => {
+    const errors: Record<string, string> = {
+      EMAIL_EXISTS: "Email already exists",
+      INVALID_PASSWORD: "Wrong password",
+      EMAIL_NOT_FOUND: "This email is not registered 🔍", // Updated
+      WEAK_PASSWORD: "Password too weak",
+      INVALID_EMAIL: "Invalid email address format",
+      NETWORK_ERROR: "Network issue, try again",
+      PROFILE_UPDATE_FAILED: "Profile update failed",
+      TOO_MANY_ATTEMPTS_TRY_LATER: "Too many attempts. Try later",
+      USER_DISABLED: "This account has been disabled",
+      MISSING_EMAIL: "Please enter an email address",
+    };
+    return errors[code] ?? "An unexpected error occurred. Please try again.";
+  };
+
+  const fetchWithTimeout = async (
+    url: string,
+    options: RequestInit,
+    timeout = 10000,
+  ) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      return res;
+    } catch {
+      clearTimeout(timer);
+      throw new Error("NETWORK_ERROR");
     }
-  }, [isAuthenticated, submitting]);
+  };
 
-  // -------- LOGIN USING SDK HOOK --------
+  // -------- HANDLERS --------
   const handleLogin = async () => {
     if (!email.trim() || !password) {
       setMessage({ text: "Enter email and password", type: "error" });
       return;
     }
-
     setSubmitting(true);
-    setMessage({ text: "", type: "" });
-
     try {
-      const result = await login(email.trim(), password);
-      
-      if (result.success) {
-        console.log("✅ Login successful");
-        // Navigation will happen via the useEffect above
-      } else {
-        setMessage({ text: result.error || "Login failed", type: "error" });
-        setSubmitting(false);
-      }
-    } catch (error: any) {
-      setMessage({ text: error.message || "Login failed", type: "error" });
+      const res = await fetchWithTimeout(
+        `${BASE_AUTH_URL}:signInWithPassword?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            returnSecureToken: true,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message);
       setSubmitting(false);
+      router.replace("/dashboard");
+    } catch (e: any) {
+      setSubmitting(false);
+      setMessage({ text: getFriendlyError(e.message), type: "error" });
     }
   };
 
-  // -------- SIGNUP USING SDK HOOK --------
   const handleSignup = async () => {
     if (!email.trim() || !displayName.trim() || !password) {
       setMessage({ text: "Fill all fields", type: "error" });
       return;
     }
-
     if (password !== confirmPassword) {
       setMessage({ text: "Passwords do not match", type: "error" });
       return;
     }
-
     setSubmitting(true);
-    setMessage({ text: "", type: "" });
-
     try {
-      const result = await signup(email.trim(), password, displayName.trim());
-      
-      if (result.success) {
-        setMessage({
-          text: "Account created! Logging you in...",
-          type: "success",
-        });
-        // User will be automatically logged in and redirected
-      } else {
-        setMessage({ text: result.error || "Signup failed", type: "error" });
-        setSubmitting(false);
-      }
-    } catch (error: any) {
-      setMessage({ text: error.message || "Signup failed", type: "error" });
+      const res = await fetchWithTimeout(
+        `${BASE_AUTH_URL}:signUp?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            returnSecureToken: true,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message);
+      const updateRes = await fetch(`${BASE_AUTH_URL}:update?key=${API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idToken: data.idToken,
+          displayName: displayName.trim(),
+          returnSecureToken: true,
+        }),
+      });
+      if (!updateRes.ok) throw new Error("PROFILE_UPDATE_FAILED");
+      setMessage({ text: "Account created! Please login 👇", type: "success" });
+      setIsLoginMode(true);
       setSubmitting(false);
+    } catch (e: any) {
+      setSubmitting(false);
+      setMessage({ text: getFriendlyError(e.message), type: "error" });
     }
   };
 
-  // -------- UI --------
+  const handleResetPassword = async () => {
+    if (!email.trim()) {
+      setMessage({ text: "Please enter your email first", type: "error" });
+      return;
+    }
+    setSubmitting(true);
+    setMessage({ text: "", type: "" }); // Clear previous messages
+
+    try {
+      const res = await fetchWithTimeout(
+        `${BASE_AUTH_URL}:sendOobCode?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            requestType: "PASSWORD_RESET",
+            email: email.trim(),
+          }),
+        },
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        // If Firebase returns an error (like EMAIL_NOT_FOUND)
+        throw new Error(data.error?.message);
+      }
+
+      // Success logic
+      setMessage({
+        text: "Reset link sent! Check your inbox 📧",
+        type: "success",
+      });
+      setSubmitting(false);
+
+      // Optional: Wait 3 seconds then go back to login automatically
+      setTimeout(() => setIsResetMode(false), 3000);
+    } catch (e: any) {
+      setSubmitting(false);
+      // This will show "This email is not registered 🔍" if it's EMAIL_NOT_FOUND
+      setMessage({ text: getFriendlyError(e.message), type: "error" });
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -134,7 +218,6 @@ export default function HomeScreen() {
         style={[styles.bg, { width, height }]}
       >
         <View style={styles.overlay} />
-
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
@@ -152,38 +235,42 @@ export default function HomeScreen() {
             >
               <AppText style={styles.title}>Kids 2 Coding</AppText>
               <AppText style={styles.subTitle}>
-                Unlock your inner genius 🤖
+                {isResetMode
+                  ? "Recover your account 🔑"
+                  : "Unlock your inner genius 🤖"}
               </AppText>
 
-              <View style={styles.tabs}>
-                {["Login", "Join"].map((t, i) => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[
-                      styles.tab,
-                      isLoginMode === (i === 0) && styles.activeTab,
-                    ]}
-                    onPress={() => setIsLoginMode(i === 0)}
-                  >
-                    <AppText style={{ color: "#fff" }}>{t}</AppText>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {!isResetMode && (
+                <View style={styles.tabs}>
+                  {["Login", "Join"].map((t, i) => (
+                    <TouchableOpacity
+                      key={t}
+                      style={[
+                        styles.tab,
+                        isLoginMode === (i === 0) && styles.activeTab,
+                      ]}
+                      onPress={() => setIsLoginMode(i === 0)}
+                    >
+                      <AppText style={{ color: "#fff" }}>{t}</AppText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
 
               {message.text !== "" && (
                 <View
                   style={[
                     styles.msg,
-                    message.type === "error"
-                      ? styles.error
-                      : styles.success,
+                    message.type === "error" ? styles.error : styles.success,
                   ]}
                 >
-                  <AppText>{message.text}</AppText>
+                  <AppText style={{ color: "#fff", textAlign: "center" }}>
+                    {message.text}
+                  </AppText>
                 </View>
               )}
 
-              {!isLoginMode && (
+              {!isLoginMode && !isResetMode && (
                 <TextInput
                   placeholder="Display Name"
                   placeholderTextColor="#ddd"
@@ -194,42 +281,79 @@ export default function HomeScreen() {
               )}
 
               <TextInput
-                placeholder="Email"
+                placeholder="Email Address"
                 placeholderTextColor="#ddd"
                 style={styles.input}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
+                keyboardType="email-address"
               />
 
-              <TextInput
-                placeholder="Password"
-                placeholderTextColor="#ddd"
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-
-              {!isLoginMode && (
-                <TextInput
-                  placeholder="Confirm Password"
-                  placeholderTextColor="#ddd"
-                  style={styles.input}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                />
+              {!isResetMode && (
+                <>
+                  <TextInput
+                    placeholder="Password"
+                    placeholderTextColor="#ddd"
+                    style={styles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                  />
+                  {isLoginMode && (
+                    <TouchableOpacity
+                      onPress={() => setIsResetMode(true)}
+                      style={styles.forgotPassContainer}
+                    >
+                      <AppText style={styles.forgotPassText}>
+                        Forgot Password?
+                      </AppText>
+                    </TouchableOpacity>
+                  )}
+                  {!isLoginMode && (
+                    <TextInput
+                      placeholder="Confirm Password"
+                      placeholderTextColor="#ddd"
+                      style={styles.input}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry
+                    />
+                  )}
+                </>
               )}
 
               <AppButton
-                title={submitting ? "" : isLoginMode ? "Sign In" : "Create Account"}
-                onPress={isLoginMode ? handleLogin : handleSignup}
+                title={
+                  submitting
+                    ? ""
+                    : isResetMode
+                      ? "Send Reset Link"
+                      : isLoginMode
+                        ? "Sign In"
+                        : "Create Account"
+                }
+                onPress={
+                  isResetMode
+                    ? handleResetPassword
+                    : isLoginMode
+                      ? handleLogin
+                      : handleSignup
+                }
                 disabled={submitting}
                 style={styles.btn}
               >
                 {submitting && <ActivityIndicator color="#fff" />}
               </AppButton>
+
+              {isResetMode && (
+                <TouchableOpacity
+                  onPress={() => setIsResetMode(false)}
+                  style={{ marginTop: 20, alignItems: "center" }}
+                >
+                  <AppText style={styles.forgotPassText}>Back to Login</AppText>
+                </TouchableOpacity>
+              )}
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -238,7 +362,6 @@ export default function HomeScreen() {
   );
 }
 
-// -------- STYLES --------
 const styles = StyleSheet.create({
   container: { flex: 1 },
   bg: { justifyContent: "center" },
@@ -246,11 +369,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.45)",
   },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  scroll: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
   card: {
     backgroundColor: "rgba(255,255,255,0.15)",
     padding: 25,
@@ -274,7 +393,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   btn: { marginTop: 10 },
-  msg: { padding: 10, borderRadius: 10, marginBottom: 10 },
-  error: { backgroundColor: "rgba(255,0,0,0.2)" },
-  success: { backgroundColor: "rgba(0,255,0,0.2)" },
+  msg: { padding: 12, borderRadius: 10, marginBottom: 15 },
+  error: { backgroundColor: "rgba(255,50,50,0.4)" },
+  success: { backgroundColor: "rgba(50,255,50,0.3)" },
+  forgotPassContainer: {
+    alignSelf: "flex-end",
+    marginBottom: 15,
+    paddingRight: 5,
+  },
+  forgotPassText: {
+    color: "#ddd",
+    fontSize: 13,
+    textDecorationLine: "underline",
+  },
 });
