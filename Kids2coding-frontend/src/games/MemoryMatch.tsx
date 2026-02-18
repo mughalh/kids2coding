@@ -1,0 +1,286 @@
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const items = ["🧠", "💻", "⚡", "🖱️", "📦", "📝"];
+
+export default function MemoryMatchGame() {
+  const generateCards = () => {
+    return [...items, ...items]
+      .sort(() => Math.random() - 0.5)
+      .map((item, index) => ({
+        id: index,
+        value: item,
+        flipped: false,
+        matched: false,
+      }));
+  };
+
+  const [cards, setCards] = useState(generateCards());
+  const [selected, setSelected] = useState([]);
+  const [tries, setTries] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+
+  // 👇 Added state for instructions popup
+  const [showInstructions, setShowInstructions] = useState(true);
+
+  // Timer - Modified to only start when instructions are closed
+  useEffect(() => {
+    if (showInstructions) return;
+
+    const timer = setInterval(() => setSeconds((prev) => prev + 1), 1000);
+    return () => clearInterval(timer);
+  }, [showInstructions]);
+
+  // Match checking
+  useEffect(() => {
+    if (selected.length === 2) {
+      const [first, second] = selected;
+      setTries((prev) => prev + 1);
+      if (cards[first].value === cards[second].value) {
+        const newCards = [...cards];
+        newCards[first].matched = true;
+        newCards[second].matched = true;
+        setCards(newCards);
+        setSelected([]);
+      } else {
+        setTimeout(() => {
+          const newCards = [...cards];
+          newCards[first].flipped = false;
+          newCards[second].flipped = false;
+          setCards(newCards);
+          setSelected([]);
+        }, 1000);
+      }
+    }
+  }, [selected]);
+
+  // Win check
+  useEffect(() => {
+    if (cards.every((card) => card.matched)) {
+      setTimeout(() => {
+        alert(
+          `🎉 Congratulations! You finished in ${tries} tries and ${seconds} seconds!`,
+        );
+      }, 500);
+    }
+  }, [cards]);
+
+  const handlePress = (index) => {
+    if (cards[index].flipped || cards[index].matched || selected.length === 2)
+      return;
+
+    const newCards = [...cards];
+    newCards[index].flipped = true;
+    setCards(newCards);
+    setSelected([...selected, index]);
+  };
+
+  const resetGame = () => {
+    setCards(generateCards());
+    setSelected([]);
+    setTries(0);
+    setSeconds(0);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* 👇 Instructions Modal Popup */}
+      <Modal visible={showInstructions} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Memory Match Rules 🧠</Text>
+
+            <View style={styles.rulesList}>
+              <Text style={styles.ruleText}>
+                1. Tap a card to flip it over and reveal the icon.
+              </Text>
+              <Text style={styles.ruleText}>
+                2. Tap a second card to find a matching pair.
+              </Text>
+              <Text style={styles.ruleText}>
+                3. If they match, they stay visible. If not, they flip back!
+              </Text>
+              <Text style={styles.ruleText}>
+                4. Match all pairs as fast as you can with the fewest tries.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.startBtn}
+              onPress={() => setShowInstructions(false)}
+            >
+              <Text style={styles.startBtnText}>Start Game 🚀</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Text style={styles.title}>Memory Match</Text>
+      <Text style={styles.info}>
+        Tries: {tries} | Time: {seconds}s
+      </Text>
+      <View style={styles.grid}>
+        {cards.map((card, index) => (
+          <Card key={card.id} card={card} onPress={() => handlePress(index)} />
+        ))}
+      </View>
+      <TouchableOpacity style={styles.button} onPress={resetGame}>
+        <Text style={styles.buttonText}>Restart Game 🔄</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}
+
+// Card component with flip animation
+const Card = ({ card, onPress }) => {
+  const flipAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(flipAnim, {
+      toValue: card.flipped || card.matched ? 180 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [card.flipped, card.matched]);
+
+  const frontInterpolate = flipAnim.interpolate({
+    inputRange: [0, 180],
+    outputRange: ["0deg", "180deg"],
+  });
+  const backInterpolate = flipAnim.interpolate({
+    inputRange: [0, 180],
+    outputRange: ["180deg", "360deg"],
+  });
+
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.cardContainer}>
+        <Animated.View
+          style={[
+            styles.card,
+            styles.cardFront,
+            { transform: [{ rotateY: frontInterpolate }] },
+          ]}
+        >
+          <Text style={styles.cardText}>❓</Text>
+        </Animated.View>
+        <Animated.View
+          style={[
+            styles.card,
+            styles.cardBack,
+            { transform: [{ rotateY: backInterpolate }] },
+          ]}
+        >
+          <Text style={styles.cardText}>{card.value}</Text>
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+    alignItems: "center",
+    paddingTop: 50,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  info: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: "90%",
+    justifyContent: "center",
+  },
+  cardContainer: {
+    width: 70,
+    height: 70,
+    margin: 10,
+  },
+  card: {
+    width: 70,
+    height: 70,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    backfaceVisibility: "hidden",
+  },
+  cardFront: {
+    backgroundColor: "#a29bfe",
+  },
+  cardBack: {
+    backgroundColor: "#fdcb6e",
+  },
+  cardText: {
+    fontSize: 30,
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#6c5ce7",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    width: "85%",
+    padding: 25,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#6c5ce7",
+  },
+  rulesList: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  ruleText: {
+    fontSize: 16,
+    color: "#2d3436",
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  startBtn: {
+    backgroundColor: "#a29bfe",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+  },
+  startBtnText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+});
