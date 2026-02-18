@@ -1,50 +1,144 @@
-# Welcome to your Expo app 👋
+# 🚀 Kids 2 Coding - Learn Programming Through Play
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An interactive mobile learning platform that teaches programming concepts to children through gamified courses, lessons, and quizzes.
 
-## Get started
+## 📱 Features
 
-1. Install dependencies
+### For Learners
+- **Interactive Courses** - Bite-sized coding lessons for kids aged 8-14
+- **Progress Tracking** - XP points, levels, and daily streaks
+- **Quizzes & Challenges** - Test knowledge and earn badges
+- **Personal Dashboard** - View progress, continue learning
+- **AI Buddy** - Get help when stuck (coming soon)
 
-   ```bash
-   npm install
-   ```
+### For Parents/Teachers
+- **Progress Monitoring** - Track learning journey
+- **Achievement System** - Badges for completed milestones
 
-2. Start the app
+### For Admins
+- **Web Admin Panel** - Manage courses, lessons, and quizzes
+- **Bulk Import** - Add multiple courses via JSON
+- **Content Management** - Update learning materials dynamically
 
-   ```bash
-   npx expo start
-   ```
+## 🛠️ Tech Stack
 
-In the output, you'll find options to open the app in a
+### Mobile App
+- **Framework**: React Native with Expo
+- **Navigation**: Expo Router (file-based routing)
+- **Language**: TypeScript
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Backend
+- **Authentication**: Firebase Auth
+- **Database**: Firebase Realtime Database
+- **Hosting**: Firebase Hosting (admin panel)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Admin Panel
+- **Framework**: React with Vite
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel / Netlify
 
-## Get a fresh project
+## 📦 Installation
 
-When you're ready, run:
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
+- Expo CLI
+- Firebase account
+
+### Mobile App Setup
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone https://github.com/yourusername/kids2coding.git
+cd kids2coding
+
+# Install dependencies
+npm install
+
+# Create .env file with your Firebase config
+echo "EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key" > .env
+echo "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain" >> .env
+echo "EXPO_PUBLIC_FIREBASE_DATABASE_URL=your_database_url" >> .env
+# ... add other config vars
+
+# Start the app
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Admin Panel Setup
 
-## Learn more
+```bash
+cd kids2coding-admin
+npm install
+npm run dev
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🔧 Firebase Configuration
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Email/Password authentication
+3. Create Realtime Database
+4. Set up security rules (see `firebase-rules.json`)
+5. Add your config to `.env` file
 
-## Join the community
+## 📁 Project Structure
 
-Join our community of developers creating universal apps.
+```
+kids2coding/
+├── app/                    # Expo Router screens
+│   ├── courses/            # Course-related screens
+│   ├── dashboard.tsx       # Main dashboard
+│   ├── profile.tsx         # User profile
+│   └── home.tsx            # Login/signup screen
+├── src/
+│   ├── components/         # Reusable components
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useAuth.ts      # Authentication
+│   │   ├── useCourses.ts   # Course data
+│   │   └── useProgress.ts  # Progress tracking
+│   └── firebase/           # Firebase configuration
+└── kids2coding-admin/      # Separate admin panel
+    ├── src/
+    │   ├── pages/          # Admin pages
+    │   └── services/       # Firebase services
+    └── public/
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🎯 Core Features Implemented
+
+- ✅ User registration & login (email/password)
+- ✅ Course browsing with filters
+- ✅ Lesson completion tracking
+- ✅ Quiz scoring system
+- ✅ XP & leveling system
+- ✅ Daily streak tracking
+- ✅ Badge achievements
+- ✅ Admin content management
+- ✅ JSON course import
+
+## 🚀 Roadmap
+
+- [ ] Social features (friends, leaderboards)
+- [ ] Parent dashboard
+- [ ] Offline mode
+- [ ] Video lessons
+- [ ] Interactive coding challenges
+- [ ] AI-powered learning assistant
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Icons by [Lucide](https://lucide.dev/)
+- Built with [Expo](https://expo.dev/)
+- Backend by [Firebase](https://firebase.google.com/)
+
+---
+
+**Happy Coding! 🎮**
