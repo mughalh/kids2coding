@@ -1,0 +1,177 @@
+[
+  {
+    "title": "Python for Kids: Adventure Begins",
+    "description": "Learn Python basics through fun stories and games. Perfect for ages 8-12.",
+    "level": "beginner",
+    "tags": ["python", "coding", "beginner"],
+    "emoji": "🐍",
+    "duration": "4 weeks",
+    "color": "#4F46E5",
+    "bgColor": "#EEF2FF",
+    "lessons": {
+      "lesson1": {
+        "title": "What is Python?",
+        "content": "Python is a friendly language. Watch the video to meet Python!",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+        "duration": "5 min",
+        "emoji": "📺"
+      },
+      "lesson2": {
+        "title": "Your First Program",
+        "content": "Let's write 'Hello, World!' using print().",
+        "type": "text",
+        "duration": "8 min",
+        "emoji": "💻"
+      },
+      "lesson3": {
+        "title": "Variables and Data Types",
+        "content": "Learn to store information in variables.",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=zHjJb9UN1_s",
+        "duration": "10 min",
+        "emoji": "📦"
+      }
+    },
+    "quizzes": {
+      "quiz1": {
+        "title": "Python Basics Quiz",
+        "questions": [
+          {
+            "question": "What function prints text to the screen?",
+            "options": ["input()", "print()", "output()", "display()"],
+            "correctAnswer": 1
+          },
+          {
+            "question": "Which of these is a valid variable name?",
+            "options": ["2pac", "my-name", "my_name", "my.name"],
+            "correctAnswer": 2
+          }
+        ]
+      }
+    }
+  },
+  {
+    "title": "JavaScript for Young Coders",
+    "description": "Make websites interactive with JavaScript!",
+    "level": "intermediate",
+    "tags": ["javascript", "web", "interactive"],
+    "emoji": "⚡",
+    "duration": "6 weeks",
+    "color": "#F59E0B",
+    "bgColor": "#FEF3C7",
+    "lessons": {
+      "lesson1": {
+        "title": "What is JavaScript?",
+        "content": "JavaScript brings websites to life!",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+        "duration": "6 min",
+        "emoji": "🌐"
+      },
+      "lesson2": {
+        "title": "Variables and Data",
+        "content": "Learn let, const, and different data types.",
+        "type": "text",
+        "duration": "12 min",
+        "emoji": "📊"
+      }
+    },
+    "quizzes": {
+      "quiz1": {
+        "title": "JS Fundamentals",
+        "questions": [
+          {
+            "question": "How do you declare a variable in modern JavaScript?",
+            "options": ["var name", "let name", "variable name", "int name"],
+            "correctAnswer": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "title": "Scratch Game Design",
+    "description": "Create your own games without typing code!",
+    "level": "beginner",
+    "tags": ["scratch", "games", "visual"],
+    "emoji": "🎮",
+    "duration": "5 weeks",
+    "color": "#10B981",
+    "bgColor": "#D1FAE5",
+    "lessons": {
+      "lesson1": {
+        "title": "Getting Started with Scratch",
+        "content": "Meet the Scratch interface.",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=jXUZaf5D12A",
+        "duration": "7 min",
+        "emoji": "🐱"
+      }
+    },
+    "quizzes": {}
+  },
+  {
+    "title": "Web Design with HTML & CSS",
+    "description": "Build beautiful web pages from scratch.",
+    "level": "beginner",
+    "tags": ["html", "css", "web"],
+    "emoji": "🎨",
+    "duration": "5 weeks",
+    "color": "#8B5CF6",
+    "bgColor": "#EDE9FE",
+    "lessons": {
+      "lesson1": {
+        "title": "HTML Basics",
+        "content": "Learn the structure of a webpage.",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=UB1O30fR-EE",
+        "duration": "9 min",
+        "emoji": "📝"
+      }
+    },
+    "quizzes": {}
+  },
+  {
+    "title": "Robotics with LEGO Mindstorms",
+    "description": "Program real robots!",
+    "level": "intermediate",
+    "tags": ["robotics", "lego", "hardware"],
+    "emoji": "🤖",
+    "duration": "8 weeks",
+    "color": "#EF4444",
+    "bgColor": "#FEE2E2",
+    "lessons": {
+      "lesson1": {
+        "title": "Introduction to Robots",
+        "content": "What is a robot?",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=IPOkW5P7A6Y",
+        "duration": "6 min",
+        "emoji": "🔧"
+      }
+    },
+    "quizzes": {}
+  },
+  {
+    "title": "Artificial Intelligence for Kids",
+    "description": "Discover how AI works!",
+    "level": "intermediate",
+    "tags": ["ai", "machine-learning", "future"],
+    "emoji": "🧠",
+    "duration": "6 weeks",
+    "color": "#EC4899",
+    "bgColor": "#FCE7F3",
+    "lessons": {
+      "lesson1": {
+        "title": "What is AI?",
+        "content": "Learn about artificial intelligence.",
+        "type": "video",
+        "videoUrl": "https://www.youtube.com/watch?v=oV74Najm6Nc",
+        "duration": "8 min",
+        "emoji": "🤯"
+      }
+    },
+    "quizzes": {}
+  }
+]
