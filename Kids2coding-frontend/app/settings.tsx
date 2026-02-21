@@ -17,12 +17,15 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppText } from "../src/components/AppText";
 import { ScreenWrapper } from "../src/components/ScreenWrapper";
 import { Colors } from "../src/constants/colors";
+import { useAuth } from "../src/hooks/useAuth";
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { logout } = useAuth();
   
   const [settings, setSettings] = useState({
     notifications: true,
@@ -44,9 +47,17 @@ export default function SettingsScreen() {
         { 
           text: "Log Out", 
           style: "destructive",
-          onPress: () => {
-            // Handle logout
-            router.replace("/login");
+          onPress: async () => {
+            try {
+              // Call Firebase signOut() and clear local auth state
+              await logout();
+              // Clear AsyncStorage
+              await AsyncStorage.clear();
+              // Navigation will be handled by _layout.tsx when isAuthenticated becomes false
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           }
         }
       ]

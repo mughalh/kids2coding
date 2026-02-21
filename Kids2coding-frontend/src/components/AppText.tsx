@@ -1,47 +1,38 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { Text, StyleSheet, TextStyle, TextProps } from 'react-native';
 import { Colors } from '../constants/colors';
 
 interface AppTextProps extends TextProps {
-  type?: 'default' | 'title' | 'subtitle' | 'caption' | 'label';
-  color?: string;
+  children: React.ReactNode;
+  style?: TextStyle | TextStyle[];
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  weight?: 'regular' | 'medium' | 'semibold' | 'bold';
+  color?: 'primary' | 'secondary' | 'accent' | 'text' | 'textLight' | 'error' | 'success' | 'warning';
   align?: 'auto' | 'left' | 'right' | 'center' | 'justify';
+  numberOfLines?: number;
 }
 
 export const AppText: React.FC<AppTextProps> = ({
   children,
   style,
-  type = 'default',
-  color,
-  align,
+  size = 'md',
+  weight = 'regular',
+  color = 'text',
+  align = 'left',
+  numberOfLines,
   ...props
 }) => {
-  const getTypeStyle = () => {
-    switch (type) {
-      case 'title':
-        return styles.title;
-      case 'subtitle':
-        return styles.subtitle;
-      case 'caption':
-        return styles.caption;
-      case 'label':
-        return styles.label;
-      default:
-        return styles.default;
-    }
-  };
+  const textStyles = [
+    styles.base,
+    styles.sizes[size],
+    styles.weights[weight],
+    { color: Colors[color] || Colors.text },
+    { textAlign: align },
+    style,
+  ];
 
   return (
-    <Text
-      style={[
-        styles.base,
-        getTypeStyle(),
-        color && { color },
-        align && { textAlign: align },
-        style,
-      ]}
-      {...props}
-    >
+    <Text style={textStyles} numberOfLines={numberOfLines} {...props}>
       {children}
     </Text>
   );
@@ -49,34 +40,21 @@ export const AppText: React.FC<AppTextProps> = ({
 
 const styles = StyleSheet.create({
   base: {
+    fontSize: 16,
     color: Colors.text,
   },
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
+  sizes: {
+    xs: { fontSize: 12 },
+    sm: { fontSize: 14 },
+    md: { fontSize: 16 },
+    lg: { fontSize: 18 },
+    xl: { fontSize: 20 },
+    xxl: { fontSize: 24 },
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 40,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
-    color: Colors.textLight,
-  },
-  caption: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: Colors.textLight,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    color: Colors.textLight,
+  weights: {
+    regular: { fontWeight: '400' },
+    medium: { fontWeight: '500' },
+    semibold: { fontWeight: '600' },
+    bold: { fontWeight: '700' },
   },
 });

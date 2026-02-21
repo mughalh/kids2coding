@@ -16,17 +16,15 @@ import {
 import { AppButton } from "../src/components/AppButton";
 import { AppText } from "../src/components/AppText";
 import { Colors } from "../src/constants/colors";
-import { useAuth } from "../src/hooks/useAuth"; // 👈 Use the hook
+import { useAuth } from "../src/hooks/useAuth";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const cardWidth = width > 768 ? 450 : width * 0.9;
 
-  // -------- USE AUTH HOOK --------
-  const { login, signup, resetPassword, loading: authLoading, isAuthenticated } = useAuth();
+  const { login, signup, loading: authLoading, isAuthenticated } = useAuth();
 
-  // -------- STATE --------
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -36,22 +34,13 @@ export default function HomeScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // -------- ANIMATION --------
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -59,15 +48,12 @@ export default function HomeScreen() {
     setMessage({ text: "", type: "" });
   }, [isLoginMode, isResetMode]);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && !submitting) {
-      console.log("✅ User authenticated, redirecting to dashboard");
       router.replace("/dashboard");
     }
   }, [isAuthenticated, submitting]);
 
-  // -------- HANDLERS USING SDK --------
   const handleLogin = async () => {
     if (!email.trim() || !password) {
       setMessage({ text: "Enter email and password", type: "error" });
@@ -77,28 +63,21 @@ export default function HomeScreen() {
     setSubmitting(true);
     setMessage({ text: "", type: "" });
 
-    try {
-      const result = await login(email.trim(), password);
-      
-      if (result.success) {
-        setMessage({ text: "Login successful! Redirecting...", type: "success" });
-        // Navigation will happen via the useEffect above
-      } else {
-        setMessage({ text: result.error || "Login failed", type: "error" });
-        setSubmitting(false);
-      }
-    } catch (error: any) {
-      setMessage({ text: error.message || "Login failed", type: "error" });
+    const result = await login(email.trim(), password);
+    
+    if (result.success) {
+      // Will redirect via useEffect
+    } else {
+      setMessage({ text: result.error || "Login failed", type: "error" });
       setSubmitting(false);
     }
   };
 
   const handleSignup = async () => {
     if (!email.trim() || !displayName.trim() || !password) {
-      setMessage({ text: "Fill all fields", type: "error" });
+      setMessage({ text: "Please fill all fields", type: "error" });
       return;
     }
-
     if (password !== confirmPassword) {
       setMessage({ text: "Passwords do not match", type: "error" });
       return;
@@ -107,28 +86,19 @@ export default function HomeScreen() {
     setSubmitting(true);
     setMessage({ text: "", type: "" });
 
-    try {
-      const result = await signup(email.trim(), password, displayName.trim());
-      
-      if (result.success) {
-        setMessage({
-          text: "Account created! Logging you in...",
-          type: "success",
-        });
-        // User will be automatically logged in and redirected
-      } else {
-        setMessage({ text: result.error || "Signup failed", type: "error" });
-        setSubmitting(false);
-      }
-    } catch (error: any) {
-      setMessage({ text: error.message || "Signup failed", type: "error" });
+    const result = await signup(email.trim(), password, displayName.trim());
+    
+    if (result.success) {
+      // Will redirect via useEffect
+    } else {
+      setMessage({ text: result.error || "Signup failed", type: "error" });
       setSubmitting(false);
     }
   };
 
   const handleResetPassword = async () => {
     if (!email.trim()) {
-      setMessage({ text: "Please enter your email", type: "error" });
+      setMessage({ text: "Enter your email", type: "error" });
       return;
     }
 
@@ -136,153 +106,91 @@ export default function HomeScreen() {
     setMessage({ text: "", type: "" });
 
     try {
-      const result = await resetPassword(email.trim());
-      
-      if (result.success) {
-        setMessage({
-          text: "Reset link sent! Check your inbox 📧",
-          type: "success",
-        });
+      const API_KEY = "AIzaSyCQBF47kQr2hVxKv5kXSevAqueb8cwHqGI";
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${API_KEY}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            requestType: "PASSWORD_RESET",
+            email: email.trim(),
+          }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (response.ok) {
+        setMessage({ text: "Reset link sent! Check your inbox 📧", type: "success" });
         setTimeout(() => setIsResetMode(false), 3000);
       } else {
-        setMessage({ text: result.error || "Failed to send reset link", type: "error" });
+        const data = await response.json();
+        setMessage({ text: data.error?.message || "Failed to send reset link", type: "error" });
       }
-      setSubmitting(false);
-    } catch (error: any) {
-      setMessage({ text: error.message || "Failed to send reset link", type: "error" });
+    } catch (error) {
+      setMessage({ text: "Network error. Please try again.", type: "error" });
+    } finally {
       setSubmitting(false);
     }
   };
 
+  if (authLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={require("../assets/splash.jpg")}
-        style={[styles.bg, { width, height }]}
-      >
+      <ImageBackground source={require("../assets/splash.jpg")} style={[styles.bg, { width, height }]}>
         <View style={styles.overlay} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
-          <ScrollView contentContainerStyle={styles.scroll}>
-            <Animated.View
-              style={[
-                styles.card,
-                {
-                  width: cardWidth,
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }],
-                },
-              ]}
-            >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+            <Animated.View style={[styles.card, { width: cardWidth, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <AppText style={styles.title}>Kids 2 Coding</AppText>
-              <AppText style={styles.subTitle}>
-                {isResetMode
-                  ? "Recover your account 🔑"
-                  : "Unlock your inner genius 🤖"}
-              </AppText>
-
+              <AppText style={styles.subTitle}>{isResetMode ? "Recover account 🔑" : "Unlock your inner genius 🤖"}</AppText>
+              
               {!isResetMode && (
                 <View style={styles.tabs}>
-                  {["Login", "Join"].map((t, i) => (
-                    <TouchableOpacity
-                      key={t}
-                      style={[
-                        styles.tab,
-                        isLoginMode === (i === 0) && styles.activeTab,
-                      ]}
-                      onPress={() => setIsLoginMode(i === 0)}
-                    >
-                      <AppText style={{ color: "#fff" }}>{t}</AppText>
-                    </TouchableOpacity>
-                  ))}
+                  <TouchableOpacity style={[styles.tab, isLoginMode && styles.activeTab]} onPress={() => { setIsLoginMode(true); setMessage({text:"", type:""}); }}>
+                    <AppText style={{ color: "#fff" }}>Login</AppText>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.tab, !isLoginMode && styles.activeTab]} onPress={() => { setIsLoginMode(false); setMessage({text:"", type:""}); }}>
+                    <AppText style={{ color: "#fff" }}>Join</AppText>
+                  </TouchableOpacity>
                 </View>
               )}
 
               {message.text !== "" && (
-                <View
-                  style={[
-                    styles.msg,
-                    message.type === "error" ? styles.error : styles.success,
-                  ]}
-                >
-                  <AppText style={{ color: "#fff", textAlign: "center" }}>
-                    {message.text}
-                  </AppText>
+                <View style={[styles.msg, message.type === "error" ? styles.error : styles.success]}>
+                  <AppText style={{ color: "#fff", textAlign: "center", fontSize: 13 }}>{message.text}</AppText>
                 </View>
               )}
 
               {!isLoginMode && !isResetMode && (
-                <TextInput
-                  placeholder="Display Name"
-                  placeholderTextColor="#ddd"
-                  style={styles.input}
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                />
+                <TextInput placeholder="Display Name" placeholderTextColor="#ddd" style={styles.input} value={displayName} onChangeText={setDisplayName} />
               )}
-
-              <TextInput
-                placeholder="Email Address"
-                placeholderTextColor="#ddd"
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-
+              
+              <TextInput placeholder="Email Address" placeholderTextColor="#ddd" style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+              
               {!isResetMode && (
                 <>
-                  <TextInput
-                    placeholder="Password"
-                    placeholderTextColor="#ddd"
-                    style={styles.input}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                  />
+                  <TextInput placeholder="Password" placeholderTextColor="#ddd" style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
                   {isLoginMode && (
-                    <TouchableOpacity
-                      onPress={() => setIsResetMode(true)}
-                      style={styles.forgotPassContainer}
-                    >
-                      <AppText style={styles.forgotPassText}>
-                        Forgot Password?
-                      </AppText>
+                    <TouchableOpacity onPress={() => setIsResetMode(true)} style={styles.forgotPassContainer}>
+                      <AppText style={styles.forgotPassText}>Forgot Password?</AppText>
                     </TouchableOpacity>
                   )}
                   {!isLoginMode && (
-                    <TextInput
-                      placeholder="Confirm Password"
-                      placeholderTextColor="#ddd"
-                      style={styles.input}
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      secureTextEntry
-                    />
+                    <TextInput placeholder="Confirm Password" placeholderTextColor="#ddd" style={styles.input} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
                   )}
                 </>
               )}
 
-              <AppButton
-                title={
-                  submitting
-                    ? ""
-                    : isResetMode
-                      ? "Send Reset Link"
-                      : isLoginMode
-                        ? "Sign In"
-                        : "Create Account"
-                }
-                onPress={
-                  isResetMode
-                    ? handleResetPassword
-                    : isLoginMode
-                      ? handleLogin
-                      : handleSignup
-                }
+              <AppButton 
+                title={submitting ? "" : isResetMode ? "Send Reset Link" : isLoginMode ? "Sign In" : "Create Account"} 
+                onPress={isResetMode ? handleResetPassword : isLoginMode ? handleLogin : handleSignup}
                 disabled={submitting}
                 style={styles.btn}
               >
@@ -290,10 +198,7 @@ export default function HomeScreen() {
               </AppButton>
 
               {isResetMode && (
-                <TouchableOpacity
-                  onPress={() => setIsResetMode(false)}
-                  style={{ marginTop: 20, alignItems: "center" }}
-                >
+                <TouchableOpacity onPress={() => setIsResetMode(false)} style={{ marginTop: 20, alignItems: "center" }}>
                   <AppText style={styles.forgotPassText}>Back to Login</AppText>
                 </TouchableOpacity>
               )}
@@ -308,45 +213,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   bg: { justifyContent: "center" },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.5)" },
   scroll: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  card: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    padding: 25,
-    borderRadius: 30,
-  },
-  title: { fontSize: 32, color: "#fff", fontWeight: "800" },
-  subTitle: { color: "#ddd", marginBottom: 20 },
-  tabs: {
-    flexDirection: "row",
-    backgroundColor: "rgba(0,0,0,0.2)",
-    borderRadius: 12,
-    marginBottom: 15,
-  },
-  tab: { flex: 1, padding: 10, alignItems: "center" },
-  activeTab: { backgroundColor: Colors.primary, borderRadius: 12 },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 12,
-    padding: 14,
-    color: "#fff",
-    marginBottom: 10,
-  },
-  btn: { marginTop: 10 },
+  card: { backgroundColor: "rgba(255,255,255,0.15)", padding: 25, borderRadius: 30, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  title: { fontSize: 32, color: "#fff", fontWeight: "800", textAlign: "center" },
+  subTitle: { color: "#ddd", marginBottom: 20, textAlign: "center" },
+  tabs: { flexDirection: "row", backgroundColor: "rgba(0,0,0,0.3)", borderRadius: 12, marginBottom: 15, padding: 4 },
+  tab: { flex: 1, padding: 10, alignItems: "center", borderRadius: 10 },
+  activeTab: { backgroundColor: Colors.primary },
+  input: { backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 12, padding: 14, color: "#fff", marginBottom: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.2)' },
+  btn: { marginTop: 10, height: 55, justifyContent: 'center' },
   msg: { padding: 12, borderRadius: 10, marginBottom: 15 },
-  error: { backgroundColor: "rgba(255,50,50,0.4)" },
-  success: { backgroundColor: "rgba(50,255,50,0.3)" },
-  forgotPassContainer: {
-    alignSelf: "flex-end",
-    marginBottom: 15,
-    paddingRight: 5,
-  },
-  forgotPassText: {
-    color: "#ddd",
-    fontSize: 13,
-    textDecorationLine: "underline",
-  },
+  error: { backgroundColor: "rgba(255,50,50,0.6)" },
+  success: { backgroundColor: "rgba(50,255,50,0.4)" },
+  forgotPassContainer: { alignSelf: "flex-end", marginBottom: 15, paddingRight: 5 },
+  forgotPassText: { color: "#ddd", fontSize: 13, textDecorationLine: "underline" },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
 });

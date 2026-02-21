@@ -1,13 +1,15 @@
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Image, StyleSheet, View, Animated } from "react-native";
 import { AppText } from "../src/components/AppText";
 import { Colors } from "../src/constants/colors";
+import { useAuth } from "../src/hooks/useAuth";
 
 export default function SplashScreen() {
   const router = useRouter();
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const { isAuthenticated, loading } = useAuth();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -24,12 +26,21 @@ export default function SplashScreen() {
       }),
     ]).start();
 
+    // Only redirect after auth state is determined
     const timer = setTimeout(() => {
-      router.replace("/home");
+      if (!loading) {
+        // _layout.tsx will handle the navigation based on auth state
+        // We just let it take over
+        if (isAuthenticated) {
+          router.replace("/dashboard");
+        } else {
+          router.replace("/home");
+        }
+      }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAuthenticated, loading]);
 
   return (
     <View style={styles.container}>

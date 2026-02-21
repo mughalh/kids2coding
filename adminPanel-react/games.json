@@ -1,0 +1,180 @@
+{
+
+    "code-runner": {
+      "title": "Code Runner",
+      "description": "Run JavaScript code and see the output",
+      "emoji": "🏃",
+      "color": "#0984e3",
+      "difficulty": "beginner",
+      "xpReward": 10,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "code": "for (let i = 1; i <= 5; i++) {\n  console.log(i);\n}",
+          "expectedOutput": "1\n2\n3\n4\n5",
+          "xpReward": 10
+        }
+      }
+    },
+    "fix-the-bug": {
+      "title": "Fix the Bug",
+      "description": "Find and fix bugs in JavaScript code",
+      "emoji": "🐛",
+      "color": "#E91E63",
+      "difficulty": "beginner",
+      "xpReward": 50,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "buggyCode": "console.log('Hello')",
+          "expectedOutput": "Hello",
+          "hint": "Missing quote",
+          "xpReward": 50
+        }
+      }
+    },
+    "syntax-puzzle": {
+      "title": "Syntax Puzzle",
+      "description": "Fix syntax errors in code",
+      "emoji": "🧩",
+      "color": "#fdcb6e",
+      "difficulty": "beginner",
+      "xpReward": 40,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "codeWithBugs": "for i=1; i<=5; i++\nconsole.log(i)",
+          "expectedOutput": "1\n2\n3\n4\n5",
+          "hint": "Add 'let' and brackets",
+          "xpReward": 40
+        }
+      }
+    },
+    "memory-match": {
+      "title": "Memory Match",
+      "description": "Test your memory by matching pairs",
+      "emoji": "🧠",
+      "color": "#00b894",
+      "difficulty": "beginner",
+      "xpReward": 50,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "items": ["🧠", "💻", "⚡", "🖱️"],
+          "xpReward": 50
+        }
+      }
+    },
+    "logic-maze": {
+      "title": "Logic Maze",
+      "description": "Navigate through mazes with coding logic",
+      "emoji": "🧩",
+      "color": "#6c5ce7",
+      "difficulty": "intermediate",
+      "xpReward": 30,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "maze": [["S", 0, 0, "F"]],
+          "maxMoves": 10,
+          "xpReward": 30
+        }
+      }
+    },
+    "algorithm-race": {
+      "title": "Algorithm Race",
+      "description": "Race through algorithmic challenges",
+      "emoji": "🏎️",
+      "color": "#4CAF50",
+      "difficulty": "intermediate",
+      "xpReward": 100,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "title": "Bubble Sort",
+          "statement": "Sort the array [5,2,9,1,5] using Bubble Sort.",
+          "correctSolution": "[1,2,5,5,9]",
+          "explanation": "Compare each element and swap iteratively.",
+          "timeLimit": 120,
+          "xpReward": 100
+        }
+      }
+    },
+    "sudoku": {
+      "title": "Sudoku Puzzle",
+      "description": "Challenge your brain with number puzzles",
+      "emoji": "🧩",
+      "color": "#6c5ce7",
+      "difficulty": "intermediate",
+      "xpReward": 50,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "difficulty": "Easy",
+          "hideCount": 30,
+          "hints": 3,
+          "xpReward": 50
+        },
+        "level2": {
+          "levelNumber": 2,
+          "difficulty": "Medium",
+          "hideCount": 45,
+          "hints": 2,
+          "xpReward": 75
+        },
+        "level3": {
+          "levelNumber": 3,
+          "difficulty": "Hard",
+          "hideCount": 55,
+          "hints": 1,
+          "xpReward": 100
+        }
+      }
+    },
+    "tictactoe": {
+      "title": "Tic Tac Toe",
+      "description": "Classic game with a coding twist",
+      "emoji": "❌⭕",
+      "color": "#00b894",
+      "difficulty": "beginner",
+      "xpReward": 10,
+      "levels": {
+        "level1": {
+          "levelNumber": 1,
+          "difficulty": "Easy",
+          "winsToComplete": 3,
+          "xpReward": 10,
+          "gatekeeperQuestions": [
+            {
+              "q": "What is 15 + 7?",
+              "a": "22",
+              "choices": ["20", "22", "25", "18"]
+            },
+            {
+              "q": "In coding, what does '//' mean?",
+              "a": "Comment",
+              "choices": ["Divide", "Multiply", "Comment", "Add"]
+            }
+          ]
+        },
+        "level2": {
+          "levelNumber": 2,
+          "difficulty": "Medium",
+          "winsToComplete": 5,
+          "xpReward": 20,
+          "gatekeeperQuestions": [
+            {
+              "q": "What is 10 * 3?",
+              "a": "30",
+              "choices": ["13", "30", "300", "7"]
+            },
+            {
+              "q": "What is a 'Boolean'?",
+              "a": "True/False",
+              "choices": ["Number", "Text", "True/False", "Loop"]
+            }
+          ]
+        }
+      }
+    }
+  }

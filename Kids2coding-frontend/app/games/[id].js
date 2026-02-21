@@ -13,6 +13,8 @@ import SyntaxPuzzle from "../../src/games/SyntaxPuzzle";
 import MemoryMatch from "../../src/games/MemoryMatch";
 import LogicMaze from "../../src/games/LogicMaze";
 import AlgorithmRaceGame from "../../src/games/AlgorithmRaceGame";
+import SudokuGame from "../../src/games/SudokuGame";
+import TicTacToeGame from "../../src/games/TicTacToeGame";
 
 const gameComponents = {
   "code-runner": CodeRunner,
@@ -20,7 +22,9 @@ const gameComponents = {
   "syntax-puzzle": SyntaxPuzzle,
   "memory-match": MemoryMatch,
   "logic-maze": LogicMaze,
-  "algorithm-race": AlgorithmRaceGame
+  "algorithm-race": AlgorithmRaceGame,
+  "sudoku": SudokuGame,
+  "tictactoe": TicTacToeGame
 };
 
 export default function GameScreen() {
@@ -54,7 +58,7 @@ export default function GameScreen() {
   }
 
   return (
-    <ScreenWrapper scrollable>
+    <ScreenWrapper>
       <GameComponent gameId={id} onGameComplete={handleGameComplete} />
     </ScreenWrapper>
   );
