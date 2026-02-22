@@ -30,6 +30,7 @@ import { ScreenWrapper } from "../src/components/ScreenWrapper";
 import { Colors } from "../src/constants/colors";
 import { database } from "../src/firebase/config";
 import { useAuth } from "../src/hooks/useAuth";
+import { Home, Gamepad2, Puzzle, Bot, User } from "lucide-react-native";
 
 // Timeout duration for loading (10 seconds)
 const LOADING_TIMEOUT = 10000;
@@ -361,6 +362,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenWrapper>
+      
       <LinearGradient
         colors={[Colors.primary, Colors.primaryDark]}
         style={styles.header}

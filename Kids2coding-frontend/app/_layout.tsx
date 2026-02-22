@@ -5,6 +5,7 @@ import { Colors } from "../src/constants/colors";
 import { useAuth } from "../src/hooks/useAuth";
 import { LogBox, View } from 'react-native';
 import { AppText } from "../src/components/AppText";
+import { AppProvider } from "../src/contexts/AppContext"; // 👈 Add this import
 
 LogBox.ignoreLogs([
   'Blocked aria-hidden',
@@ -98,7 +99,7 @@ export default function Layout() {
   }
 
   return (
-    <>
+    <AppProvider> {/* 👈 Wrap everything with AppProvider */}
       <StatusBar style="dark" backgroundColor={Colors.background} />
       <Stack
         screenOptions={{
@@ -107,6 +108,6 @@ export default function Layout() {
           animation: "slide_from_right",
         }}
       />
-    </>
+    </AppProvider>
   );
 }

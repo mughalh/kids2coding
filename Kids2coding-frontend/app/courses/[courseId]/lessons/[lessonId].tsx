@@ -9,6 +9,7 @@ import { useProgress } from "../../../../src/hooks/useProgress";
 import { getCourseById } from "../../../../src/services/coursesService";
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { WebView } from 'react-native-webview';
+import { useAppContext } from "../../../../src/contexts/AppContext";
 
 export default function LessonScreen() {
   const { courseId, lessonId } = useLocalSearchParams();
@@ -74,6 +75,22 @@ export default function LessonScreen() {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
+  // Inside component:
+  const { setCurrentContext } = useAppContext();
+
+  useEffect(() => {
+    setCurrentContext('lesson', { 
+      courseId: courseId as string,
+      lessonId: lessonId as string 
+    });
+    
+    return () => {
+      setCurrentContext('lesson', { 
+        courseId: null,
+        lessonId: null 
+      });
+    };
+  }, [courseId, lessonId]);
   // Render appropriate video player
   const renderVideo = () => {
     if (!lesson.videoUrl) return null;

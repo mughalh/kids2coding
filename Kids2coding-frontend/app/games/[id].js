@@ -15,6 +15,7 @@ import LogicMaze from "../../src/games/LogicMaze";
 import AlgorithmRaceGame from "../../src/games/AlgorithmRaceGame";
 import SudokuGame from "../../src/games/SudokuGame";
 import TicTacToeGame from "../../src/games/TicTacToeGame";
+import { useAppContext } from "../../src/contexts/AppContext";
 
 const gameComponents = {
   "code-runner": CodeRunner,
@@ -30,6 +31,20 @@ const gameComponents = {
 export default function GameScreen() {
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
+  
+  // ✅ Move useAppContext INSIDE the component
+  const { setCurrentContext } = useAppContext();
+
+  // ✅ Set context when game loads
+  useEffect(() => {
+    if (id) {
+      setCurrentContext('game', { gameId: id });
+    }
+    
+    return () => {
+      setCurrentContext('game', { gameId: null });
+    };
+  }, [id]);
 
   const handleGameComplete = (won, score) => {
     console.log(`Game ${id} completed: ${won ? 'won' : 'lost'}, score: ${score}`);

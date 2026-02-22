@@ -25,6 +25,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../../src/hooks/useProgress";
 import { getCourseById } from "../../src/services/coursesService";
+import { useAppContext } from "../../src/contexts/AppContext";
 
 export default function CourseDetailScreen() {
   const { courseId } = useLocalSearchParams();
@@ -75,6 +76,16 @@ export default function CourseDetailScreen() {
   const handleStartQuiz = (quizId: string) => {
     router.push(`/courses/${courseId}/quiz/${quizId}`);
   };
+
+  const { setCurrentContext } = useAppContext();
+
+  useEffect(() => {
+    setCurrentContext('course', { courseId: courseId as string });
+    
+    return () => {
+      setCurrentContext('course', { courseId: null }); // Clear when leaving
+    };
+  }, [courseId]);
 
   if (loading) {
     return (
